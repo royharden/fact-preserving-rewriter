@@ -1,7 +1,8 @@
 // Self-contained deployment entrypoint: imports ONLY this function's generated _lib tree.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 import { ConfigProbeRequestSchema, ConfigProbeResponseSchema, RewriteRequestSchema, JudgeRequestSchema } from './_lib/contracts/api.ts';
-import { readLiveConfig } from './_lib/lib/server/config.ts';
+import { evalAllowanceReady, readLiveConfig } from './_lib/lib/server/config.ts';
+import type { EvalAllowance } from './_lib/lib/server/config.ts';
 import { attemptFromRow, runFromRow } from './_lib/lib/server/codec.ts';
 import { executeRewrite } from './_lib/lib/server/rewrite.ts';
 import { executeJudge } from './_lib/lib/server/judge.ts';
@@ -62,15 +63,26 @@ export async function handler(req: Request): Promise<Response> {
     const user = verified.data.user;
     const body = await readBody(req);
     const config = readLiveConfig(env);
-    if (ConfigProbeRequestSchema.safeParse(body).success) {
+    const probe = ConfigProbeRequestSchema.safeParse(body);
+    if (probe.success) {
       // No run/evidence RPC or model call: only authenticated, service-only readiness inspection.
       const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
       const limits = await admin.from('budget_limits').select('live_enabled').limit(1).maybeSingle();
       const databaseEnabled = !limits.error && limits.data?.live_enabled === true;
+      let allowanceReady: boolean | undefined;
+      if (probe.data.eval) {
+        // Never accept a target user id. This service-only read is scoped to the verified JWT user.
+        const now = Date.now();
+        const allowance = await admin.from('eval_allowances').select('expires_at,max_calls,max_micro_usd,used_calls,used_micro_usd,note')
+          .eq('user_id', user.id).gt('expires_at', new Date(now).toISOString())
+          .order('created_at', { ascending: false }).order('id', { ascending: false }).limit(1).maybeSingle();
+        allowanceReady = !allowance.error && evalAllowanceReady(allowance.data as EvalAllowance | null, probe.data.eval, now);
+      }
       return json(ConfigProbeResponseSchema.parse({
         configured: databaseEnabled && !!config.rewrite && (!config.judgeEnabled || !!config.judge),
         rewrite_configured: databaseEnabled && !!config.rewrite,
         judge_configured: databaseEnabled && !!config.judge,
+        ...(allowanceReady === undefined ? {} : { eval_allowance_ready: allowanceReady }),
       }));
     }
     const parsed = FUNCTION === 'rewrite' ? RewriteRequestSchema.safeParse(body) : JudgeRequestSchema.safeParse(body);

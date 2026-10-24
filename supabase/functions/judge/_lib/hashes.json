@@ -3,8 +3,8 @@
   "sourceRoot": "src",
   "files": {
     "contracts/api.ts": {
-      "source_sha256": "89a3ca7245ec764e480bf1fe298363b018144e664627cef06c35f72514df341f",
-      "copied_sha256": "e0ee7fab30df49c0d7cb063966df359a457390328d43bf01cbeb55c1dbe47cf7"
+      "source_sha256": "fc775c397f54d2376f72a16a135377a255744b722dfbc22392ebe0dd9f32c73f",
+      "copied_sha256": "7a77c7487421e59bfb7b6529d33e4224f3cc63f37ac129849291bdea7bc3ed73"
     },
     "contracts/run.ts": {
       "source_sha256": "a5e2047da8a80c060db07040e9acc7191553467b0e9396e6bb65a3a61be9809f",
@@ -183,8 +183,8 @@
       "copied_sha256": "5798679d9558af56240a0ecc24d588649aed2919941169c97e55771289ac45fc"
     },
     "lib/server/config.ts": {
-      "source_sha256": "afff2377fed84dc3897b8ba3c14f64767e33c627bbe59bb7b82acd0ee87a3b35",
-      "copied_sha256": "30a497156f35e4576a0a74fed91119146df041ebd447f4d473fd249311e45d88"
+      "source_sha256": "505549c16cd35918507015cd9d41e38aaaf81ffc83d83dabceaf1720da148178",
+      "copied_sha256": "961c6cda767cc2ba1761fc2c388fad3a7a1b55ba358f27afd09a53d01406bac2"
     },
     "lib/server/judge.ts": {
       "source_sha256": "42312c958fe7596a74c5d4b4adbc91dd5bb6f2473d50eee880b9d684d776d524",

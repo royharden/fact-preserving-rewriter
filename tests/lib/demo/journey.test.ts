@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { readFile } from 'node:fs/promises';
 import { ALLFAIL_REPLICATION, DEMO_IGNORE_SUGGESTION, INCIDENT_NOTE_03, INJECTED_CEO, TERSE_ENGINEER, WARM_NEWSLETTER } from '../../../src/lib/demo/demoData.ts';
 import { demoDeps, demoRunSpec, runOnStore } from '../../../src/lib/demo/runLocal.ts';
 import { prepareRun } from '../../../src/lib/loop/prepare.ts';
@@ -7,6 +8,16 @@ import { acknowledgeableFlagIds } from '../../../src/lib/rulings/gate.ts';
 import { contentHash } from '../../../src/lib/rulings/contentHash.ts';
 import { createLocalStore, memoryStorage } from '../../../src/lib/store/localStore.ts';
 import { fixedNow, idFactory, rulingInput } from '../store/helpers.ts';
+import { MOCK_SOURCE } from '../../../src/lib/providers/mock.ts';
+import type { RecordingsFile } from '../../../src/lib/providers/mock.ts';
+
+async function journeyDeps() {
+  // Read generated recordings only after a future source-mode switch; missing/stale recordings must fail.
+  const recordings = MOCK_SOURCE === 'recordings'
+    ? JSON.parse(await readFile(new URL('../../../fixtures/mock/recordings.json', import.meta.url), 'utf8')) as RecordingsFile
+    : undefined;
+  return demoDeps(recordings);
+}
 
 describe('Offline Demo journey, PLAN 1.1 legs 4–10', () => {
   it('shows hard failures, repairs, reviews, approves the exact hash, replays, rejects injection, and overrides three failures', async () => {
@@ -17,11 +28,12 @@ describe('Offline Demo journey, PLAN 1.1 legs 4–10', () => {
     const store = createLocalStore(storage, { now: fixedNow, newId: idFactory('run') });
     const opts = { now: fixedNow, newId: idFactory('attempt') };
     try {
+      const deps = await journeyDeps();
       const base = demoRunSpec(INCIDENT_NOTE_03.id, TERSE_ENGINEER.id);
       const display = await prepareRun(base);
       const ignored = display.ledger.find((f) => f.kind === 'entity' && f.raw === DEMO_IGNORE_SUGGESTION[INCIDENT_NOTE_03.id].raw)!;
       expect(ignored).toBeDefined();
-      const bundle = await runOnStore(store, { ...base, toggles: { [ignored.id]: 'ignored' } }, demoDeps(), opts);
+      const bundle = await runOnStore(store, { ...base, toggles: { [ignored.id]: 'ignored' } }, deps, opts);
       expect(bundle.run.localDemo).toBe(true);
       expect(store.recordLabel).toBe('local demo record');
       expect(bundle.run.ledger!.find((f) => f.id === ignored.id)!.required).toBe(false);
@@ -66,7 +78,7 @@ describe('Offline Demo journey, PLAN 1.1 legs 4–10', () => {
       expect(await reloaded.canExport(bundle.run.id, second.id)).toBe(true);
 
       // Leg 9: scripted obedience adds a claim without a new fact; overlap flags it and reject stays locked.
-      const injected = await runOnStore(reloaded, demoRunSpec(INJECTED_CEO.id, TERSE_ENGINEER.id), demoDeps(), opts);
+      const injected = await runOnStore(reloaded, demoRunSpec(INJECTED_CEO.id, TERSE_ENGINEER.id), deps, opts);
       expect(injected.run.verdict).toBe('needs_review');
       expect(injected.attempts).toHaveLength(1);
       expect(injected.attempts[0].flags.some((f) => f.class === 'hard')).toBe(false);
@@ -76,7 +88,7 @@ describe('Offline Demo journey, PLAN 1.1 legs 4–10', () => {
       expect(await reloaded.canExport(injected.run.id, injected.run.selectedAttemptId!)).toBe(false);
 
       // Leg 10: no fourth attempt; failed content cannot be approved and override needs a typed reason.
-      const failed = await runOnStore(reloaded, demoRunSpec(ALLFAIL_REPLICATION.id, WARM_NEWSLETTER.id), demoDeps(), opts);
+      const failed = await runOnStore(reloaded, demoRunSpec(ALLFAIL_REPLICATION.id, WARM_NEWSLETTER.id), deps, opts);
       expect(failed.attempts.map((a) => a.ordinal)).toEqual([1, 2, 3]);
       expect(failed.attempts.every((a) => a.flags.some((f) => f.class === 'hard'))).toBe(true);
       expect(failed.run.verdict).toBe('failed');

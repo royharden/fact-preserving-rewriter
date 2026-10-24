@@ -8,7 +8,8 @@ import { prepareRun } from '../loop/prepare.ts';
 import type { RunSpec } from '../loop/prepare.ts';
 import type { PipelineDeps } from '../loop/runPipeline.ts';
 import { runPipeline } from '../loop/runPipeline.ts';
-import { createMockRewriter, MOCK_MODEL } from '../providers/mock.ts';
+import { createMockRewriter, MOCK_MODEL, MOCK_SOURCE } from '../providers/mock.ts';
+import type { MockSource, RecordingsFile } from '../providers/mock.ts';
 import type { Rewriter } from '../providers/types.ts';
 import type { RunBundle, Store } from '../store/types.ts';
 import { DEMO_REFERENCE_TIME, demoSource, demoVoice } from './demoData.ts';
@@ -95,10 +96,11 @@ export function demoRunSpec(sourceId: string, voiceId: string, toggles: Readonly
 }
 
 /** The demo's mock rewriter (MOCK_SOURCE-selected; scripted until recordings exist). */
-export function demoRewriter(): Rewriter {
-  return createMockRewriter({ scripts: DEMO_SCRIPTS });
+export function demoRewriter(recordings?: RecordingsFile, source: MockSource = MOCK_SOURCE): Rewriter {
+  return createMockRewriter({ scripts: DEMO_SCRIPTS, recordings }, source);
 }
 
-export function demoDeps(): PipelineDeps {
-  return { rewriter: demoRewriter(), model: MOCK_MODEL };
+/** Browser callers inject a bundled RecordingsFile when MOCK_SOURCE is recordings. Missing data never falls back. */
+export function demoDeps(recordings?: RecordingsFile, source: MockSource = MOCK_SOURCE): PipelineDeps {
+  return { rewriter: demoRewriter(recordings, source), model: MOCK_MODEL };
 }

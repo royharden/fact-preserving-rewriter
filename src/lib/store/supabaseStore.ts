@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   ConfigProbeResponseSchema, JudgeRequestSchema, JudgeResponseSchema, RewriteRequestSchema, RewriteResponseSchema,
 } from '../../contracts/api.ts';
-import type { ConfigProbeResponse, JudgeRequest, JudgeResponse, RewriteRequest, RewriteResponse } from '../../contracts/api.ts';
+import type { ConfigProbeResponse, EvalRequirement, JudgeRequest, JudgeResponse, RewriteRequest, RewriteResponse } from '../../contracts/api.ts';
 import type { Attempt, Run, Ruling } from '../../contracts/run.ts';
 import type { RulingInput } from '../rulings/types.ts';
 import { attemptFromRow, rulingFromRow, runFromRow } from '../server/codec.ts';
@@ -15,17 +15,21 @@ export interface SupabaseStore extends Store {
   readonly kind: 'supabase';
   requestRewrite(request: RewriteRequest): Promise<RewriteResponse>;
   requestJudge(request: JudgeRequest): Promise<JudgeResponse>;
-  probeConfiguration(): Promise<ConfigProbeResponse>;
+  probeConfiguration(evalRequirement?: EvalRequirement): Promise<ConfigProbeResponse>;
 }
 function checked<T>(reply: { data: T; error: { message: string } | null }): T {
   if (reply.error) throw new Error(reply.error.message);
   return reply.data;
 }
-export function createSupabaseStore(client: SupabaseClient): SupabaseStore {
+export function createSupabaseStore(client: SupabaseClient, options: { expectedUserId?: string } = {}): SupabaseStore {
   let signingIn: Promise<string> | null = null;
   async function userId(): Promise<string> {
     const session = checked(await client.auth.getSession());
-    if (session.session) return session.session.user.id;
+    if (session.session) {
+      if (options.expectedUserId && session.session.user.id !== options.expectedUserId) throw new Error('approved_eval_identity_mismatch');
+      return session.session.user.id;
+    }
+    if (options.expectedUserId) throw new Error('approved_eval_session_required');
     signingIn ??= (async () => {
       const signed = checked(await client.auth.signInAnonymously());
       if (!signed.user) throw new Error('anonymous_sign_in_failed');
@@ -82,8 +86,8 @@ export function createSupabaseStore(client: SupabaseClient): SupabaseStore {
     async requestJudge(request): Promise<JudgeResponse> {
       return JudgeResponseSchema.parse(await invoke('judge', JudgeRequestSchema.parse(request)));
     },
-    async probeConfiguration(): Promise<ConfigProbeResponse> {
-      return ConfigProbeResponseSchema.parse(await invoke('rewrite', { probe: true }));
+    async probeConfiguration(evalRequirement): Promise<ConfigProbeResponse> {
+      return ConfigProbeResponseSchema.parse(await invoke('rewrite', { probe: true, ...(evalRequirement ? { eval: evalRequirement } : {}) }));
     },
     async recordRuling(input: RulingInput): Promise<Ruling> {
       await userId();

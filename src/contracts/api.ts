@@ -86,11 +86,19 @@ export const ErrorResponseSchema = z
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 
 /** Authenticated readiness check handled by either existing function; it never dispatches a model call. */
-export const ConfigProbeRequestSchema = z.object({ probe: z.literal(true) }).strict();
+export const EvalRequirementSchema = z.object({
+  max_calls: z.number().int().min(1).max(1000),
+  max_micro_usd: z.number().int().min(1).max(5_000_000),
+  required_micro_usd: z.number().int().min(1).max(5_000_000),
+  approval_reference: z.string().trim().min(1).max(200),
+}).strict().refine((v) => v.required_micro_usd <= v.max_micro_usd);
+export type EvalRequirement = z.infer<typeof EvalRequirementSchema>;
+export const ConfigProbeRequestSchema = z.object({ probe: z.literal(true), eval: EvalRequirementSchema.optional() }).strict();
 export const ConfigProbeResponseSchema = z.object({
   configured: z.boolean(),
   rewrite_configured: z.boolean(),
   judge_configured: z.boolean(),
+  eval_allowance_ready: z.boolean().optional(),
 }).strict();
 export type ConfigProbeResponse = z.infer<typeof ConfigProbeResponseSchema>;
 

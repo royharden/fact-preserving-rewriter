@@ -104,3 +104,51 @@ B1 is computed by the eval harness and the live endpoint returns `computed_basel
 reach a live provider. Nested Fact/Flag JSON remains camelCase; ruling replay uses monotonic SQL sequence. A judge
 provider/budget refusal can seal partial evidence and return an error; callers reload persisted state after errors.
 No backend error silently chooses Demo. Syntax parsing is the only executed code check; it proves no runtime behavior.
+
+## M4 evaluation source: validation still deferred
+
+M4 added seeded Mulberry32/Fisher-Yates split/pairing helpers, Wilson intervals, ten corruption mutators, computed
+B0/B1 and canonical B2/B3/B4 runners, eval JSON/Markdown writers, a bounded live reservation proposal and a deterministic
+twenty-rewrite unlabelled review sheet. These tools have not run. No results, threshold calibration, model recordings,
+human labels or performance measurements were fabricated during construction. The focused syntax gate parses source
+only; it establishes neither type compatibility nor behavior.
+
+| What | Exact later command / steps |
+|---|---|
+| Types, imports and focused assertions | After dependency install: `npm run typecheck`; `npm run lint`; `npx vitest run tests/lib/evalkit tests/lib/mutators tests/lib/baselines` |
+| Corpus and recordings generators | `npm run fixtures`; inspect manifest/source annotations and synthetic provenance; `npm run recordings`; test stale/missing keys. Scripted mode remains the initial mock source |
+| Dev calibration before held-out access | `npm run eval:claims -- --calibrate-only`; inspect the exclusive-created `results/claim-thresholds.json`, dev false alarms and target-met flag, then commit this frozen artifact before any held-out eval command. Candidates are predeclared; a target miss is published. A changed corpus/checker requires a new reviewed calibration edition, never overwriting the old freeze |
+| Extractor/gold precision/recall, corruption recall, layer increments and known-good dev gate | `npm run eval:checks`; inspect actual computed JSON + `results/results.md`, exact kind/span/raw gold matches, no-op rejections, recorded mutation locations, misses and whole-token exemption recall cost. Gate <=10% is a proposal; passing it alone proves no superiority |
+| Claims held-out edition | `npm run eval:claims` evaluates once with exclusive creation of `claims.json`. Aggregate `npm run eval -- --mock` then `--live` validates and reuses the same complete edition (manifest/checker/prompt/mask/seeds/freeze provenance, threshold, unique source/type rows and summaries), without held-out reevaluation or writing it. Stale/invalid editions refuse; preserve them for an explicitly reviewed new edition. Claims false alarms are per known-good document (any flag), not per sentence; 10 dev sources mean <=5% requires zero dev false alarms |
+| Mock B0–B4 comparison | `npm run eval -- --mock`; all actual rows are labelled. Output is `results/e2e-mock.json`; live uses `e2e-live.json`, preserving mock evidence. A preexisting mode edition refuses before work. B0/B1 make zero model calls, mock costs remain unmeasured, failed outputs remain in denominators. A missing/stale mock throws `MockRecordingMissing` out of the evaluator, rather than becoming an ordinary failed metric. Pair Wilson intervals are descriptive; inspect the twenty source clusters beside the forty held-out voice pairs |
+| Paid reservation proposal | `npx tsx scripts/eval/plan-live.ts --allowance-micro-usd=<owner-declared amount>` (<=5000000). It writes a proposal only, enumerates draft/self-check/revision/judge maxima and chooses complete B2/B3/B4 pair groups within the declared allowance. Default per-call/run caps are 50000/150000 micro-USD. Sum of maximum phase reservations can exceed a run cap: incomplete outcomes remain possible and are explicit |
+| Live activation and actual accounting | Follow the separate session/allowance steps below, then `npm run eval -- --live`. The evaluator restores and verifies `EVAL_EXPECTED_USER_ID`; its store refuses missing/changed identity rather than creating another anonymous user. The authenticated server probe must confirm backend configuration and the caller's matching active bounded allowance before evaluation. Paid work uses deployed `SupabaseStore` functions only; authenticated `call_ledger` SELECT reads IDs/model/reserved/actual cost. No provider/service key enters this script. SQL enforces actual limits atomically; declaration/probe readiness is not spend authorisation |
+| Partial live outputs and evidence labels | Exercise budget refusal before first call, cap reached after partial work, provider failure, unknown settlement and failed ledger reads. Live model rows without ledger IDs are refused; corresponding unmeasured outcomes remain in a separate conservative full-cohort denominator. No extrapolation. The local overlap freeze is not claimed to configure deployed server thresholds |
+| Independent review sheet | After actual eval: `npx tsx scripts/spotcheck.ts --mock` (or `--live`); inspect20 seeded held-out B4 rewrites from the chosen mode edition in `results/spotcheck-mock.json` / `spotcheck-live.json`. All human judgement fields start null; a reviewer must independently label preservation, claims and style. Preserve rubric/reviewer/IDs and inspect actual misses. A bounded live subset may provide fewer than20 rows and correctly refuses a fabricated sheet |
+
+M4 review rework remains **source only**. Later focused assertions: `npx vitest run tests/lib/evalkit/rework.test.ts tests/lib/demo/recordings.test.ts tests/lib/demo/journey.test.ts tests/lib/store/supabaseStore.test.ts tests/contracts/functions.test.ts`.
+No bootstrap, session restore, allowance inspection, SQL, evaluator, test or recording generator has run during this rework.
+
+Later owner workflow (no real session or credentials are supplied here):
+
+1. Set public `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` and choose `EVAL_SESSION_FILE=.eval-auth/<owner-chosen-name>.json`. The path must be inside the repository's gitignored `.eval-auth/`; protect this local auth directory with the owner's OS account permissions (the writer also requests directory0700/file0600). Run `npm run eval:bootstrap-session` **only when live setup is authorised**. This creates one anonymous Auth identity, exclusively saves its tokens, and prints only its user id and file path. It makes no model call and creates no allowance. Never commit or print the saved session.
+2. Set `EVAL_EXPECTED_USER_ID` to that printed id. Produce and independently review `results/live-plan.json` using `plan-live.ts` above. Owner verifies deployed provider/model/prices and chooses a short future expiry. In the owner's privileged SQL editor, insert `eval_allowances(user_id,expires_at,max_calls,max_micro_usd,approved_by,note)` using the printed user id, owner expiry, the plan's exact `selected_max_calls`, a money ceiling no greater than `allowance_micro_usd` and no smaller than `selected_max_reserved_micro_usd`, the approving owner's name, and an exact approval-reference string. Owner SQL execution remains deferred; the evaluator cannot insert or raise these grants.
+3. Set `EVAL_OWNER_APPROVAL_REFERENCE` to that exact note string and retain the same session-file/expected-id settings. Deploy the new probe schema and function-local copies first. `npm run eval -- --live` restores/refreshes the saved session, verifies the user with Auth, persists token rotation, validates the planned keys/calls/money, and sends only bounded requirements to the authenticated readiness probe. Its service-side query uses only the verified caller's newest active grant (the SQL reservation precedence), matching note, remaining calls/money and approval ceiling. The response contains a readiness boolean, never allowance rows, counters, notes or private amounts. The E2E artifact records intended uid, approval reference, readiness and check time. SQL checks actual expiry/counters again for each reservation; the probe cannot guarantee later availability or completion. Expiry, concurrent use and partial accounting still require later execution checks.
+4. Preserve calibration, claims and both E2E editions. `eval:claims` continues to refuse a second direct held-out evaluation; aggregate commands reuse validated claims. Existing E2E editions also refuse reruns; a new edition needs explicit review rather than removing old evidence. This workflow has not been exercised with real Auth or grants.
+
+The demo's factories now accept `demoRewriter(recordings?: RecordingsFile, source=MOCK_SOURCE)` and `demoDeps(recordings?: RecordingsFile, source=MOCK_SOURCE)`.
+For M5, load optional generated `fixtures/mock/recordings.json` with a Vite glob and inject it into `demoDeps(recordings)`;
+the global source selector still controls scripted versus recordings, and missing/stale recording data must throw without fallback.
+The journey test reads the generated file only after a future global switch to recordings; unit source tests use in-memory synthetic recordings.
+
+**Optional LLM evaluation cut (PLAN section1/section7):** the comparative corpus ablation/calibration for an LLM
+claim judge is omitted in M4. `eval:checks` and `eval:claims` measure code/overlap and explicitly leave the
+code+overlap+LLM cells unmeasured; this omission remains even after a live E2E run. The existing canonical
+`ClaimJudge`/`llmJudge` client and live server-selected-attempt judge remain available and are used by the E2E Store
+path when deployed judging is enabled. That is selected-attempt evidence, not an LLM corpus comparison or calibrated
+false-alarm result. No extra paid or credential-bypassing evaluator was added. Overlap comparison remains intact.
+
+Generated results are diagnostic evidence, not proof of product correctness: extractor/checker circularity,
+agent-authored good rewrites and gold annotations, voice placeholder provenance, pair dependence and lexical-only
+relationship coverage remain limitations. Promote named measured misses into `docs/LIMITATIONS.md` only after real
+execution. The optional judge comparison requires a future separately bounded scope rather than a fabricated score.

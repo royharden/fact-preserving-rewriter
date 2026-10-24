@@ -3,5 +3,6 @@ dist/
 .env*
 !.env.example
 results/live-raw/
+.eval-auth/
 *.log
 .DS_Store
