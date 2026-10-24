@@ -1,0 +1,45 @@
+{
+  "name": "fact-preserving-rewriter",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "syntax": "node --experimental-vm-modules --no-warnings scripts/syntax-check.mjs src scripts tests vite.config.ts vitest.config.ts",
+    "eval": "tsx scripts/eval/index.ts",
+    "eval:checks": "tsx scripts/eval/checks.ts",
+    "eval:e2e": "tsx scripts/eval/e2e.ts",
+    "eval:claims": "tsx scripts/eval/claims.ts",
+    "sync:functions": "tsx scripts/sync-function-libs.ts",
+    "fixtures": "tsx scripts/build-fixtures.ts",
+    "recordings": "tsx scripts/build-mock-recordings.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.45.4",
+    "chrono-node": "2.7.7",
+    "diff": "5.2.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.12.0",
+    "@types/diff": "5.2.3",
+    "@types/node": "22.7.5",
+    "@types/react": "18.3.11",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.2",
+    "eslint": "9.12.0",
+    "globals": "15.11.0",
+    "tsx": "4.19.1",
+    "typescript": "5.6.2",
+    "typescript-eslint": "8.8.1",
+    "vite": "5.4.8",
+    "vitest": "2.1.2"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env*
+!.env.example
+results/live-raw/
+*.log
+.DS_Store
