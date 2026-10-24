@@ -1,0 +1,5 @@
+import { useState } from 'react';
+export function DeleteMyData({ live, busy, onDelete }: { live: boolean; busy: boolean; onDelete: () => void }) {
+  const [confirm, setConfirm] = useState(false);
+  return <section className="delete-data"><button type="button" className="text-button danger" disabled={busy} onClick={() => setConfirm(!confirm)}>{live ? 'Delete my live data' : 'Clear local demo history'}</button>{confirm && <div className="delete-confirm" role="group" aria-label="Confirm data deletion"><p>{live ? 'Delete all runs, source text, samples, attempts, and rulings for this anonymous account? This cannot be undone. Budget counters and call cost records are retained with text links removed.' : 'Remove all demo runs and rulings stored by this app in this browser? This cannot be undone.'}</p><div className="actions"><button type="button" className="button danger-button" disabled={busy} onClick={() => { setConfirm(false); onDelete(); }}>Confirm deletion</button><button type="button" className="button secondary" disabled={busy} onClick={() => setConfirm(false)}>Cancel</button></div></div>}</section>;
+}

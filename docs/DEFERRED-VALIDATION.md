@@ -152,3 +152,33 @@ Generated results are diagnostic evidence, not proof of product correctness: ext
 agent-authored good rewrites and gold annotations, voice placeholder provenance, pair dependence and lexical-only
 relationship coverage remain limitations. Promote named measured misses into `docs/LIMITATIONS.md` only after real
 execution. The optional judge comparison requires a future separately bounded scope rather than a fabricated score.
+
+
+## M5 review workspace: source inspection only
+
+M5 adds the React review workspace, eleven focused components, the responsive stylesheet, Vite environment
+metadata, and one plain-TypeScript presentation helper. Inherited documentation was backed up outside the
+product repo under the outer shell's `agentops/backups/m5-coder/`. No dependency install, application module,
+React render, browser, backend, build, test or generator was executed. `.tsx` files were inspected as source;
+the existing syntax parser cannot validate JSX and was not applied to them. The parser passed on
+`src/lib/ui/review.ts` and `src/vite-env.d.ts` (two files); that does not establish types, imports or behavior.
+
+| What | Exact later command / manual steps |
+|---|---|
+| TypeScript, JSX, imports, optional Vite glob and CSS bundling | After an authorised dependency install: `npm run typecheck`; `npm run lint`; `npm run build`. Verify absent `fixtures/mock/recordings.json` compiles, then generate it with `npm run recordings` and inspect its bundled import. No lockfile has been generated during M5 |
+| Offline default and explicit setup boundary | Open with no public backend variables, then with both configured. In each case keep Offline Demo selected and inspect browser network: no Supabase client construction, auth, probe or backend call before explicit Check live setup. The check creates an anonymous session and probes booleans without a model call. Live remains disabled unless the configured probe succeeds. Select Live explicitly before any source upload |
+| Bundled scripted journeys | Run incident-note-03 / terse engineer, toggle the suggested Payments entity to ignored before freeze, inspect first-attempt named failures and the next attempt's verbatim structured repair request. Inspect must/may advisory evidence; acknowledge every advisory flag and approve. Reload: newest stored local demo record, selected output, evidence version and exact hash must replay. Inspect other attempts: ruling/export stays blocked. Run injected-ceo / terse engineer and reject; run allfail-replication / warm newsletter: at most three attempts, approve disabled, override needs a trimmed typed reason >=10 characters |
+| Input limits and frozen ledger | In Live draft verify empty/non-text/over-30720-byte sources and 0/6 samples or over-20480 sample bytes are refused; 1–5 custom samples and built-in voices are available. Add protected terms and canonical aliases; change source/terms/aliases and verify draft toggles reset. Start a run: raw inputs/toggles become read-only, browser preview is replaced by the server's frozen ledger/reference time/source hash, including relative dates. A new draft creates a new run rather than editing existing evidence |
+| Real live loop, errors and resume | Provision the backend separately. Live uses only createRun(raw), requestRewrite (max three), requestJudge, load/list and ruling/export/erasure RPCs. Interrupt after server freeze, pending dispatch, complete attempt, final rewrite and partial judge response. Reload then explicitly resume; stored request keys must replay, server uncertainty/budget/provider errors stay visible, and no branch silently selects Demo. An interrupted final complete attempt can replay finish_attempts. Finalise judging with LLM unavailable and verify coverage flags/verdict floor; no paid call is made by that path |
+| Ruling and export binding under races | Approve only selected completed review_ready evidence. Needs_review requires every soft/claim/coverage ID; failed requires override reason >=10. Reject after approve revokes Copy/Download. Inspect another attempt or concurrent tab mutation/deletion: stale permission replies cannot unlock another hash; export reloads the exact selected attempt, checks evidence edition, hashes stored output again and calls Store.canExport at click. Verify errors remain locked and content bytes are not trimmed or given a new line. Live races remain subject to the server RPC's transaction boundary; an already copied/downloaded artifact cannot be revoked retroactively |
+| Text rendering, comparisons and style | Supply HTML-looking strings/URLs in source, samples and evidence: all render as React text; no HTML is interpreted or URL fetched. Compare source/rewrite with green kept, red missing and amber added facts, and wording change details. Inspect flag IDs, found values, source/rewrite offset slices, sentence-pair evidence, claim status and judged N of M coverage. Confirm descriptive style label, actual profile features and <600-word reason; no invented metrics |
+| Persistence, history and erasure | Browser storage blocked/corrupt/full must produce visible error rather than fabricated history or an unstated memory fallback. Refresh shows actual stored runs. Confirm live deletion using the in-app confirmation; source/profile/run/attempt/ruling rows disappear while anonymised cost/budget residue follows SQL policy. Switch to Demo and clear its local history separately. Live anonymous-history/session loss warning must remain visible |
+| Accessibility and responsive visual QA | Manually inspect narrow/mobile and wide desktop widths, horizontal ledger scrolling, long hashes/identifiers, empty/error/pending states, read-only input labels, keyboard focus and navigation, disabled actions, confirmation/cancel, clipboard permission denial and .txt output. No browser rendering, accessibility audit or layout measurement has been performed |
+
+M5 makes no provider, SQL, checker, mock selector or generator changes. `demoDeps(recordings)` retains the
+existing global selection and loud missing/stale-recording behavior. Offline source/sample choices are limited
+to honest bundled script pairings; arbitrary input requires a successfully probed Live workspace. Offline demo
+samples are intentionally short, so their distance is disabled. Fact colours are a presentation recomputation
+from frozen inputs; persisted attempt flags and the server/local ruling gate remain authoritative. Local demo
+rulings are explicitly labelled and are not claimed to provide server enforcement. The optional LLM comparative
+corpus evaluation cut and all prior milestone validation limits remain in force.
