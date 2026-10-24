@@ -25,6 +25,16 @@ Every row below is a check that still has to be run. Started in milestone M1; la
 | 13 | `npm run build` (Vite) — `index.html` points at `src/main.tsx`, which M5 creates | UI does not exist until M5; building was not allowed | After M5: `npm run build` |
 | 14 | npm scripts `eval*`, `sync:functions`, `fixtures`, `recordings` point at files created in M3/M4 | Scripts declared up front by plan; target files not yet written | After M3/M4: run each script once (`npm run fixtures`, `npm run sync:functions`, `npm run recordings`, `npm run eval -- --mock`) |
 | 15 | Syntax gate itself on a Node without `module.stripTypeScriptTypes` (needs Node >= 22.13 / 23.2) | Only Node 24.18 available here | `node --version`; `npm run syntax` |
+| 16 | M2 hard/soft checks and byte limits, including copied-sample source exemption, placeholder failures and uncertain merge/split correspondence | Source inspection and syntax parsing only; assertions have never executed | `npx vitest run tests/lib/checks/checks.test.ts` |
+| 17 | M2 style features, 600-word boundary, code-picked excerpts and zero-variance skipping | Source only; numerical and segmentation behaviour unverified | `npx vitest run tests/lib/style/style.test.ts` |
+| 18 | M2 bidirectional alignment, number/date blanking, overlap findings, third-judge interface and strict judge-reply parsing | Test source exists; no tests or model calls permitted | `npx vitest run tests/lib/claims/claims.test.ts`; calibrate overlap on dev in M4 before reporting detection rates |
+| 19 | M2 pure step, 3-attempt cap, repair provenance, selection, fail-closed operational errors and merge/split operator-movement regressions | Tests written but not run | `npx vitest run tests/lib/loop/loop.test.ts` |
+| 20 | M2 provider schema parsing, scripted/recorded lookup, recording staleness and injected-fetch adapter contracts | No HTTP, tests or registry lookups executed; live provider compatibility remains unverified | `npx vitest run tests/lib/providers/providers.test.ts`; later owner-configured edge-function live canary (M3+) |
+| 21 | M2 prompts keep user data out of system messages, delimit adversarial text and separate B3 phases | Source inspection only | `npx vitest run tests/lib/prompts/prompts.test.ts` |
+| 22 | M2 exact-hash/evidence approval, flag acknowledgement, reject revocation, typed override and browser-storage replay | Source only, including test cases for stale evidence and frozen attempts | `npx vitest run tests/lib/rulings/gate.test.ts tests/lib/store/localStore.test.ts` |
+| 23 | M2 Offline Demo journey legs 4–10: actual scripted attempts through local store, repair, approve, reload, injected claim rejection and three-failure override; zero fetches | Full journey test SOURCE exists; no browser or test run performed | `npx vitest run tests/lib/demo/journey.test.ts`; after M5, manually repeat PLAN 1.1 in browser Offline Demo, both with and without configured backend variables |
+| 24 | M2 integer cost helpers and UTF-16 cited pointers | Test source only | `npx vitest run tests/lib/callledger/cost.test.ts tests/lib/cited/pointer.test.ts` |
+| 25 | Recording identity and LLM coverage integration | Scripted mode remains active; M4 generator is not built yet; live judging is not validated | M4 generator must use `recordingKey(model, messages, maxTokens)` with current prompt/mask versions; run `npm run recordings`, switch `MOCK_SOURCE` to `recordings`, then `npm test` and `npm run eval -- --mock`. M3/M4 must append coverage flags from `llmCoverageDrafts` on the selected attempt before freezing evidence |
 
 ## Known M1 extractor limitations (by design or not yet handled)
 
@@ -32,8 +42,8 @@ Every row below is a check that still has to be run. Started in milestone M1; la
   than `half` ("a third") are not recognised; "two million three hundred thousand" stops at the first magnitude; a
   bare attached `s` is a seconds unit only on numbers of up to three digits ("30s"), so decades ("1990s") are not
   numbers; "$5-7M" applies the right-hand magnitude to both ends.
-- `P% of the <noun>` always normalises to `fraction <P/100> <noun>`, so it matches `half the <noun>` but not a bare
-  `P%` in the rewrite.
+- Only `50% of the <noun>` normalises to `fraction 0.5 <noun>`, matching `half the <noun>` with that same head.
+  Other percentages retain their percentage normalisation; the fraction form does not match a bare `50%` in a rewrite.
 - Dates: year-less dates take chrono's implied year from the frozen reference time (so the browser's display ledger
   can differ from the server's frozen ledger, as PLAN section 6.2 states); zones are compared as written (offset when
   chrono is certain, otherwise the abbreviation, otherwise `local`), never converted.
@@ -45,3 +55,21 @@ Every row below is a check that still has to be run. Started in milestone M1; la
   only when they open at a word start and close before a non-letter.
 - Mask namespace: the hash input is `${seedId}|${MASK_VERSION}|${counter}` (the plan's "seed id + MASK_VERSION +
   counter" with `|` separators to avoid ambiguous concatenation).
+
+## M2 construction limits
+
+- All M2 tests are source only. A successful syntax gate says nothing about imports, types, assertions or the scripted
+  journey's runtime outcome. The exact two-hard-failure and hard-clean repair assertions must be checked against
+  chrono-node and entity segmentation after installation.
+- Demo samples are deliberately short; style distance is disabled with a reason. Full 600-word voices and fixture
+  JSON tables arrive in M4. The bundled demo table already uses the `ScriptsTable` JSON shape and fails on unknown keys.
+- Overlap thresholds remain uncalibrated. Lexical overlap is not entailment, and the scripted injection test covers
+  its specific added sentence; it does not prove resistance to arbitrary prompt injection or relationship changes.
+- Soft checks compare paragraphs by position when their counts agree. When counts differ, whole-text drift checks
+  remain active and `paragraph_alignment_uncertain` always requires review: global balance cannot establish that
+  negation or modal strength stayed with the same claim. This conservative advisory also flags benign paragraph reflow;
+  merge/split regressions through `step()` are test source only and remain unexecuted.
+- The inherited optional LLM caller seam is retained with a 30-pair / 4-batch hard cap. Its strict parser has test
+  source, but server reservation, persistence and UI coverage wiring belong to later milestones.
+- Cost estimation uses UTF-8 bytes plus message overhead as a conservative estimate for byte-based tokenizers, not an
+  invoice guarantee. Provider-specific token accounting, prices, budgets and live reservation enforcement await M3/M4.
