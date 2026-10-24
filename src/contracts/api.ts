@@ -85,6 +85,15 @@ export const ErrorResponseSchema = z
   .strict();
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 
+/** Authenticated readiness check handled by either existing function; it never dispatches a model call. */
+export const ConfigProbeRequestSchema = z.object({ probe: z.literal(true) }).strict();
+export const ConfigProbeResponseSchema = z.object({
+  configured: z.boolean(),
+  rewrite_configured: z.boolean(),
+  judge_configured: z.boolean(),
+}).strict();
+export type ConfigProbeResponse = z.infer<typeof ConfigProbeResponseSchema>;
+
 // --- model outputs (strict JSON; parsed by providers/parse.ts) ----------------------------------------------------
 
 /** Rewriter output: exactly one string field. */

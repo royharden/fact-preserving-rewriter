@@ -73,3 +73,34 @@ Every row below is a check that still has to be run. Started in milestone M1; la
   source, but server reservation, persistence and UI coverage wiring belong to later milestones.
 - Cost estimation uses UTF-8 bytes plus message overhead as a conservative estimate for byte-based tokenizers, not an
   invoice guarantee. Provider-specific token accounting, prices, budgets and live reservation enforcement await M3/M4.
+
+## M3 server-seam deferred validation
+
+M3 added source for the live store, two authenticated Edge Functions, durable provider-call orchestration,
+configuration probing, generated local libraries and tests. No application module, generator, test, backend or
+provider was run. Each function's 56-module `_lib` closure was mechanically produced by file processing using the
+same transform declared in `sync-function-libs.ts`: static import closure, CRLF-to-LF, pinned `npm:` specifiers,
+generated comment, and SHA-256 over raw-source/transformed UTF-8 bytes. Runtime parity remains unverified.
+
+| What | Exact later command / steps |
+|---|---|
+| Browser/store and orchestration types/imports | `npm run typecheck`; `npm run lint` |
+| Strict API, ownership source contract and generated-copy/hash parity | `npx vitest run tests/contracts/functions.test.ts`; `npm run sync:functions`, inspect diff, rerun parity |
+| Durable dispatch/replay, stale reserved provider/model identity and increased price/token-limit refusal before claim with zero-cost failure, matching reserved resume, configuration-independent settled cache replay, unknown outcomes, B3 three-phase/single-attempt flow, stored repair provenance, source-hash/toggle refusal and unavailable judge recovery | `npx vitest run tests/lib/server/server.test.ts` |
+| Lazy anonymous session, raw-only insert, wire mapping and refusal of browser evidence writes | `npx vitest run tests/lib/store/supabaseStore.test.ts`; manually verify zero backend requests in Offline Demo even with public env vars set |
+| Deno imports, function main entrypoints and platform config | `deno check supabase/functions/rewrite/index.ts supabase/functions/judge/index.ts`; deploy only these two functions with JWT verification and anonymous auth enabled |
+| Real JWT/ownership/CORS/body boundary | Send missing/invalid JWT, other user's run ID, wrong origin, OPTIONS, wrong method/content-type, invalid JSON and >4096-byte body; verify refused run requests make zero service RPC/provider calls |
+| Configuration probe without a paid call | Authenticated POST `{ "probe": true }` to either function. Verify configured=false until actual model IDs, provider key/base URL, prices, LIVE_CALLS_ENABLED, APP_ORIGIN and DB budget_limits.live_enabled are configured. Response exposes booleans only |
+| SQL/function signature and transaction compatibility | Apply all five migrations; execute tests/sql definitions; exercise freeze clock -> freeze inputs -> begin -> reserve -> claim -> settle with response -> complete -> finish; prove B3 exactly three ledger phases and B4 at most three attempts |
+| Concurrency and crash windows | Concurrent/repeated/changed-request-key calls must never double dispatch a phase. Interrupt after reserve, claim, provider reply, response settlement and attempt completion. Reserved phases resume only with matching run/attempt/function/purpose/provider/model and enough held money for the current conservative cost; stale configuration terminates at zero cost before claim. Race that termination against a claim and verify SQL refuses a failed/zero settlement after dispatching. Settled cached replies replay independently of current configuration; dispatching never auto-redispatches |
+| Rewrite crash recovery with no durable reply | Owner settles stuck dispatching as unknown, calls fail_attempt with state unknown, then finish_attempts with an error. HTTP retry does not infer failure from elapsed time. Unknown retains full reservation and has no fabricated content |
+| Judge lifetime bounds/recovery | Repeat judge requests with new keys: deterministic batch keys 0..3, <=30 pairs each, <=4 dispatches/run. finalize_unavailable=true makes zero paid calls and conservatively terminates pending residue before sealing coverage. Missing config ->503; budget ->429 after partial evidence is safely sealed |
+| Provider models/prices/usage and actual live availability | Verify exact model IDs, pinned dependencies and price units against current official docs, then owner-authorised live canary. Post-dispatch failures and actual usage above reservation remain unknown outcomes retaining reservation |
+
+`runOnStore` remains local-only. Live callers use `createSupabaseStore(client)` and its `requestRewrite`,
+`requestJudge`, `probeConfiguration`; live `appendAttempt`/`finishRun` refuse browser evidence. Instantiate/probe
+only after explicit live exploration, never on Offline Demo mount. B0 supports a server check without a paid call;
+B1 is computed by the eval harness and the live endpoint returns `computed_baseline_local_only`. DB mock rows never
+reach a live provider. Nested Fact/Flag JSON remains camelCase; ruling replay uses monotonic SQL sequence. A judge
+provider/budget refusal can seal partial evidence and return an error; callers reload persisted state after errors.
+No backend error silently chooses Demo. Syntax parsing is the only executed code check; it proves no runtime behavior.

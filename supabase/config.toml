@@ -1,0 +1,11 @@
+project_id = "fact-preserving-rewriter"
+
+[auth]
+enabled = true
+enable_anonymous_sign_ins = true
+
+[functions.rewrite]
+verify_jwt = true
+
+[functions.judge]
+verify_jwt = true
