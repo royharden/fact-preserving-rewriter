@@ -15,6 +15,7 @@
     "eval:checks": "tsx scripts/eval/checks.ts",
     "eval:e2e": "tsx scripts/eval/e2e.ts",
     "eval:claims": "tsx scripts/eval/claims.ts",
+    "eval:bootstrap-session": "tsx scripts/eval/session.ts --bootstrap",
     "sync:functions": "tsx scripts/sync-function-libs.ts",
     "fixtures": "tsx scripts/build-fixtures.ts",
     "recordings": "tsx scripts/build-mock-recordings.ts"

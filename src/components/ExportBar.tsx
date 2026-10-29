@@ -1,0 +1,3 @@
+export function ExportBar({ allowed, busy, hash, onExport }: { allowed: boolean; busy: boolean; hash: string | null; onExport: (kind: 'copy' | 'download') => void }) {
+  return <section className="export-bar" aria-label="Export approved rewrite"><div><strong>{allowed ? 'This exact rewrite is cleared for export.' : 'Export locked until an eligible ruling is recorded.'}</strong><p className="muted hash">Content SHA-256: {hash ?? 'No completed content'}</p></div><div className="actions"><button type="button" className="button secondary" disabled={!allowed || busy} onClick={() => onExport('copy')}>Copy text</button><button type="button" className="button primary" disabled={!allowed || busy} onClick={() => onExport('download')}>Download .txt</button></div></section>;
+}

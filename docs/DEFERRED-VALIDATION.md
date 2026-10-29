@@ -1,47 +1,107 @@
 # Deferred validation
 
-This repository was written under a construction rule that allowed static checks only: nothing has been installed,
-built, type-checked, linted, tested or run. The only check performed is the syntax gate
-(`node --experimental-vm-modules --no-warnings scripts/syntax-check.mjs <files>`), which strips TypeScript types with
-Node's built-in `stripTypeScriptTypes` and parses each file as an ES module without executing it. It cannot check
-`.tsx` files, types, imports or behaviour.
+**Source complete, provisioning pending, runtime unverified.** Every check below is pending. Nothing has been installed, built, typechecked, linted, tested, evaluated or app-run; no generator, browser, Auth bootstrap, provider or SQL execution occurred. Construction allowed focused source inspection, standalone file consistency/counting and the syntax gate only. That gate strips types with Node's `module.stripTypeScriptTypes` and parses ES modules without executing product code; it cannot validate `.tsx`, types, imports, assertions, runtime behavior or security.
 
-Every row below is a check that still has to be run. Started in milestone M1; later milestones append rows.
+This consolidated checklist supersedes milestone-era future-tense notes. Implementation paths now exist except explicitly absent outputs: `package-lock.json`, `fixtures/mock/recordings.json` and generated result files. The inherited checklist was preserved outside the product repository before consolidation. Infrastructure names/configuration are centralized in [BOLT-HANDOFF.md](../BOLT-HANDOFF.md). No step below is current provisioning/publication permission. Execute only after the static construction restriction closes and any required owner authorization exists. Record exact revision, runtime, target, command and actual outcome without credentials or raw private content.
 
-| # | What | Why deferred | Exact later command / steps |
-|---|---|---|---|
-| 1 | Install dependencies and generate `package-lock.json` | Installs were not allowed; a lock file cannot be produced without an install | `npm install` then commit `package-lock.json` |
-| 2 | Pinned versions resolve and are mutually compatible (react 18.3.1, vite 5.4.8, vitest 2.1.2, typescript 5.6.2, typescript-eslint 8.8.1, chrono-node 2.7.7, ...) | Versions were chosen from memory, never resolved against the registry | `npm install` (fails loudly on a bad pin); `npm ls --depth=0` |
-| 3 | Type check (`tsconfig.json`, strict, `verbatimModuleSyntax`, `allowImportingTsExtensions`) | No `tsc` available | `npm run typecheck` |
-| 4 | Type check of root config files (`vite.config.ts`, `vitest.config.ts`) | `typecheck` covers only `src scripts tests` | `npx tsc --noEmit -p tsconfig.node.json` |
-| 5 | Lint (flat config; erasable-TypeScript rules) | No eslint available | `npm run lint` |
-| 6 | Unit tests for `src/lib/text`, `src/lib/factledger`, `src/lib/mask` (`tests/lib/**`) | Running tests was not allowed; tests are source only and have never executed | `npm test` (or `npx vitest run tests/lib`) |
-| 7 | chrono-node API usage: `chrono.parse(text, { instant, timezone: 'UTC' }, { forwardDate: false })`, `ParsedResult.index/.text/.start/.end`, `ParsedComponents.get()/.isCertain()` | Written from memory of the chrono-node 2.x API; not compiled or run against 2.7.7 | `npm run typecheck`; `npx vitest run tests/lib/factledger/dates.test.ts` |
-| 8 | chrono-node recognition assumptions in `dates.ts`: the result text includes a trailing zone abbreviation ("14:00 UTC") and marks `timezoneOffset` certain; "next Friday" has `weekday` certain and `day` uncertain; "3/4" and "03/04" are recognised; year-less dates take the year closest to the reference; leading "on/at" may be part of the match (trimmed); bare durations are not dates | Behaviour of the library, unobservable without running it | `npx vitest run tests/lib/factledger/dates.test.ts`; adjust filters in `acceptable()` if a case fails |
-| 9 | Date filters do not drop real dates or admit numbers: lower-case single words ("may") rejected, sub-day durations rejected, `1.2` / `5-7` rejected, time-only matches need a time marker | Heuristic filters over chrono output, unverified | Same as 7; later `npm run eval:checks` (extractor precision/recall per kind on gold fixtures, M4) |
-| 10 | `Intl.Segmenter` sentence behaviour: ICU breaks after "Dr. " (merged back by `segment.ts`), breaks after a line feed (headings, list items) | Engine behaviour, unobservable without running | `npx vitest run tests/lib/text/text.test.ts tests/lib/factledger/entities.test.ts` |
-| 11 | Extractor heuristics (numbers, entities, quotes, verbatim) match the tests' expectations | Hand-traced only | `npm test`; then `npm run eval:checks` for precision/recall against gold markup (M4) |
-| 12 | WebCrypto availability for `sha256Hex` in vitest's Node environment (`globalThis.crypto.subtle`, Node >= 20) | Not run | `npx vitest run tests/lib/text/text.test.ts tests/lib/mask/mask.test.ts` |
-| 13 | `npm run build` (Vite) — `index.html` points at `src/main.tsx`, which M5 creates | UI does not exist until M5; building was not allowed | After M5: `npm run build` |
-| 14 | npm scripts `eval*`, `sync:functions`, `fixtures`, `recordings` point at files created in M3/M4 | Scripts declared up front by plan; target files not yet written | After M3/M4: run each script once (`npm run fixtures`, `npm run sync:functions`, `npm run recordings`, `npm run eval -- --mock`) |
-| 15 | Syntax gate itself on a Node without `module.stripTypeScriptTypes` (needs Node >= 22.13 / 23.2) | Only Node 24.18 available here | `node --version`; `npm run syntax` |
+## Dependencies, code and generators
 
-## Known M1 extractor limitations (by design or not yet handled)
+From the product root, run in order. Stop for real failures; source assertions are not passing receipts.
 
-- Numbers: negative signs are dropped (`-5` reads as 5); European separators (`1.200.000`) and spelled fractions other
-  than `half` ("a third") are not recognised; "two million three hundred thousand" stops at the first magnitude; a
-  bare attached `s` is a seconds unit only on numbers of up to three digits ("30s"), so decades ("1990s") are not
-  numbers; "$5-7M" applies the right-hand magnitude to both ends.
-- `P% of the <noun>` always normalises to `fraction <P/100> <noun>`, so it matches `half the <noun>` but not a bare
-  `P%` in the rewrite.
-- Dates: year-less dates take chrono's implied year from the frozen reference time (so the browser's display ledger
-  can differ from the server's frozen ledger, as PLAN section 6.2 states); zones are compared as written (offset when
-  chrono is certain, otherwise the abbreviation, otherwise `local`), never converted.
-- Entities: capitalised words after a colon or inside parentheses count as mid-sentence; Markdown heading words need a
-  licence (mid-sentence capitalisation elsewhere, acronym, mixed case or protected term); multi-word runs are compared
-  as a whole, so a rewrite that splits "Acme Cloud" into "Acme" fails unless an alias is declared.
-- Quotes: a verbatim span fully inside a quote is absorbed into the quote (the whole quote is masked and compared
-  byte-for-byte); a quote that only partly overlaps a verbatim span loses to it. Single straight quotes are recognised
-  only when they open at a word start and close before a non-letter.
-- Mask namespace: the hash input is `${seedId}|${MASK_VERSION}|${counter}` (the plan's "seed id + MASK_VERSION +
-  counter" with `|` separators to avoid ambiguous concatenation).
+| Check | Exact future command / steps |
+|---|---|
+| Runtime/syntax compatibility | `node --version`; use WebCrypto-capable Node with `module.stripTypeScriptTypes` (22.13+/23.2+; construction parser used Node24). `npm run syntax` parses plain TypeScript only; for function trees separately use `node --experimental-vm-modules --no-warnings scripts/syntax-check.mjs supabase/functions` |
+| First install/package pins | `npm install`; `npm ls --depth=0`. Pins have never resolved against the registry. Inspect compatibility/security and commit a reviewed new `package-lock.json` with needed fixes. Subsequent clean environments use `npm ci`; no frozen install exists now |
+| Types/configs/lint/test source | `npm run typecheck`; `npx tsc --noEmit -p tsconfig.node.json`; `npm run lint`; `npm test`. Root config check is separate from src/scripts/tests |
+| JSX/imports/CSS/Vite | `npm run build` → `dist/`. Verify optional Vite recordings glob compiles with recordings absent and after generation. TSX received source inspection only |
+| Fixture generation | `npm run fixtures`; inspect manifest against catalog, stripped UTF-16 gold spans, counts, trap coverage, dev/heldout isolation, voice provenance, agent-authored good labels and no shared eight-word source/voice runs. `npx vitest run tests/lib/fixtures/corpus.test.ts tests/lib/fixtures/recording-capture.test.ts` |
+| Function copies/hashes | `npm run sync:functions`; inspect both `_lib/`/`hashes.json` diffs. `npx vitest run tests/contracts/functions.test.ts` re-derives transform/closure/hashes. Existing mechanical copies are not a generator/parity receipt |
+| Deno/deployment context | `deno check supabase/functions/rewrite/index.ts supabase/functions/judge/index.ts`. Verify pinned npm imports and both self-contained local trees are included in eventual authorized deployment; frontend build does not prove this |
+| Recording switch | `npm run recordings`; inspect canonical prompt/mask/model/request keys, namespace substitution and repair-dependent reached calls. Change `MOCK_SOURCE` in `src/lib/providers/mock.ts` from `scripted` to `recordings` only after generation. `npm test`; `npm run build`; later protected-edition `npm run eval -- --mock`. Missing/stale/corrupt/unlisted keys must throw `MockRecordingMissing`, without scripted fallback, across UI/journey/eval. Generated replies remain authored scripts |
+
+## Focused behavior checks
+
+The full suite covers these test sources; focused commands diagnose failures without treating hand-tracing as evidence.
+
+| Scope / assumptions | Exact future command / steps |
+|---|---|
+| Segmentation/extraction/masking | `npx vitest run tests/lib/text tests/lib/factledger tests/lib/mask`. Check stable IDs/half-open UTF-16 offsets, precedence, quantity normalization/multiplicity, same-kind whole-token exemption, ignored presence only, namespace collision/seed separators, byte-identical original-slice restoration and missing/duplicate/unknown/malformed placeholders, WebCrypto and UTF-8 limits |
+| chrono-node API/recognition | `npm run typecheck`; `npx vitest run tests/lib/factledger/dates.test.ts`. Verify parse(reference instant, UTC, forwardDate:false), result indices/text/start/end and get/isCertain; zone text/certain timezoneOffset, weekday/day certainty for next Friday, slash dates, implied year, trimmed on/at/by/the, bare/subday durations, lower-case may/march, 1.2/5-7 rejection, explicit time markers, precision/zone comparisons. Adjust filters with regression evidence |
+| ICU/title/entities | `npx vitest run tests/lib/text/text.test.ts tests/lib/factledger/entities.test.ts`. Check Dr. merging, heading/list line feeds, colon/parenthesis capitalization, sentence-initial licenses, acronym/mixed case, aliases and multiword boundaries in actual Node/browser ICU |
+| Hard/soft/input limits | `npx vitest run tests/lib/checks/checks.test.ts`. Include sample/source copy exemption, placeholder failures, merge/split operator movement and conservative paragraph mismatch advisory |
+| Style | `npx vitest run tests/lib/style/style.test.ts`. Features, 600-word boundary, code-picked excerpts, zero-variance skipping/null reason; distance is not efficacy |
+| Claims/judge interface | `npx vitest run tests/lib/claims/claims.test.ts`. Bidirectional top3 alignment, number/date blanking, overlap, third-judge test double, malformed/extra/missing judge replies and coverage drafts. Dev calibration precedes detection-rate claims |
+| Loop/providers/prompts | `npx vitest run tests/lib/loop/loop.test.ts tests/lib/providers/providers.test.ts tests/lib/prompts/prompts.test.ts`. First-hard-clean stop/max3, stored-hard-only repairs, selection ties, errors never pass, adversarial delimiters, B3 phases, strict rewrite JSON, injected-fetch contracts, missing mocks |
+| Ruling/local journey | `npx vitest run tests/lib/rulings/gate.test.ts tests/lib/store/localStore.test.ts tests/lib/demo/journey.test.ts tests/lib/demo/recordings.test.ts`. Exact hash/version, every advisory acknowledgement, reject revocation, trimmed override, reload/storage errors. Expected two named first failures/hard-clean second attempt still need chrono/entity execution |
+| Cost/pointers/baselines/mutators/statistics | `npx vitest run tests/lib/callledger tests/lib/cited tests/lib/baselines tests/lib/mutators tests/lib/evalkit`. Integer rounding/overflow/unknown reservation, UTF-16 pointers, B0/B1 zero calls, B1 sentence fallback, ten seeded non-no-op mutators, split isolation and hand-computed Wilson cases |
+| Server/store/contracts | `npx vitest run tests/lib/server/server.test.ts tests/lib/store/supabaseStore.test.ts tests/contracts/functions.test.ts`. Raw-only insert/lazy auth/expected-user refusal/wire mapping, browser-evidence refusal, freeze/hash/toggle errors, B3 phases, repair provenance, selected judging/unavailable finalization/budget, durable replay/unknown recovery and parity |
+| Eval rework | `npx vitest run tests/lib/evalkit/rework.test.ts tests/lib/demo/recordings.test.ts tests/lib/demo/journey.test.ts tests/lib/store/supabaseStore.test.ts tests/contracts/functions.test.ts`. Protected complete provenance editions, identity restore and bounded private allowance readiness without provider credentials |
+
+Known extractor gaps remain in [LIMITATIONS.md](LIMITATIONS.md). Promote measured misses only after execution with reproducible cases; do not invent misses or tune on heldout.
+
+## SQL, Auth and deployed functions
+
+Use an authorized disposable Supabase-compatible target with Auth schema/roles and UUID support. Inspect target/migration history first; apply only verified pending files in the handoff order. For a fresh isolated target execute each of the five migrations as owner with `psql "$env:S37_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f <migration-file>` in order. The environment name is a placeholder; never print its connection value. Do not replay against an unknown/populated baseline. Then run each rollback-contained definition separately:
+
+```powershell
+psql "$env:S37_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/sql/001_security.sql
+psql "$env:S37_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/sql/002_workflow_accounting.sql
+psql "$env:S37_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/sql/003_allowance_unknown.sql
+psql "$env:S37_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/sql/004_judging.sql
+```
+
+PostgreSQL has not parsed/executed these scripts. Owner SQL bypasses RLS; additionally use real anonymous/user clients and concurrent sessions:
+
+| Check | Exact future steps / expected boundary |
+|---|---|
+| Auth/RLS/grants | Enable anonymous sign-in; create disposable Auth users A/B. Anon project key alone cannot access protected data. A may SELECT/insert own profiles/raw open runs; B cannot see/mutate A or reference A's profile. Refuse derived-field run inserts, client UPDATE/DELETE and direct attempt/ruling/call/budget/allowance inserts. Anon/authenticated cannot call the nine service RPCs; user RPCs derive identity/reject unauthenticated callers. Inspect helper/sequence grants and RLS on all eight tables |
+| HTTP/ownership | After separate deployment authorization retain gateway verify_jwt and handler getUser. Send missing/invalid JWT, foreign run/attempt, wrong origin, OPTIONS, wrong method/content-type, malformed JSON and body>4096 bytes. Refused run operations make zero privileged run RPC/provider calls. Check stored source/sample and output byte limits independently |
+| Probe/missing secrets | Authenticated POST `{ "probe": true }` to either function: booleans only, no paid call/run-evidence RPC. Missing provider/model/price/live flag or DB flag yields false readiness/503; judge config required only when enabled. Missing APP_ORIGIN/platform credentials→503; wrong origin→403; bad JWT→401. Verify provider precedence/HTTPS base. Errors must disclose no secret values |
+| Workflow/contracts | Freeze clock→freeze inputs→begin→reserve→claim→settle with response→complete→finish. Refuse wrong hash/toggle/ordinal/state/changed key; same key resumes. B0/B1 reserve zero calls (B1 endpoint local-only), B2/B3 ordinal>1 refused; B3 draft/check/revision ordered; B4 max3 with stored-hard-only repair |
+| Atomic caps/idempotency | Race two SQL sessions/different runs for same user's one remaining call/insufficient combined money: exactly one succeeds, failed reservation changes no counters. Repeat users/global, shared allowance and same key; inspect run/user/global/allowance. Newest active exhausted allowance never falls back to daily caps; per-run/call limits remain |
+| Dispatch/config races | Race claim_dispatch: exactly one true. Resume matching reserved calls. Changed provider/model or greater current price/token reservation must fail/zero before send. Race termination against claim: failed/zero cannot settle after dispatch. Settled cache replays independent of current config; dispatching never auto-redispatches |
+| Crashes/unknown | Interrupt after reserve, claim, provider reply, settlement and attempt completion. Elapsed time never permits resend. Owner resolves genuinely stuck dispatching to unknown, fail_attempt(state unknown), finish_attempts(error). Unknown retains full reservation/no fabricated content. Only never-dispatched reserved phases may fail/zero; post-dispatch errors/over-reservation usage stay unknown |
+| Judge/immutability | Repeated new HTTP keys retain batch keys0..3, ≤30 pairs/≤4 dispatches; settled replay. Refuse wrong selection/status. Verify stable contiguous C/G IDs, partial coverage, missing config503/budget429. finalize_unavailable=true makes zero paid calls and conservatively terminates residue before sealing coverage. All evidence-changing RPCs refuse after review_ready |
+| Ruling/export | Approve pass or acknowledged needs_review only; failed override≥10 trimmed characters. Refuse unknown acknowledgements/stale hash/version/foreign/unselected/premature ruling. Monotonic later reject revokes even with concurrent tabs. Check can_export after every change |
+| Erasure races | Delete with confirmation during pending settlement. Profiles/runs/attempts/rulings disappear; call identity/run/attempt links and response bodies clear; allowance user detaches; counters retain. Delayed settlement cannot restore content/cache. New same-identity run still meets retained daily cap. No claim of Auth-user/provider erasure |
+| Live provider compatibility | Before paid canary owner checks current official model IDs/prices/units, shared price pair coverage for both chosen models, auth/runtime/API and pinned dependencies. An explicitly authorized bounded canary uses deployed functions/actual ledger usage. No provider/service key enters browser/evaluator |
+
+## Calibration and evaluation editions
+
+No evaluator has run. Do not inspect/evaluate heldout outcomes before reviewing and committing dev freeze.
+
+1. After fixture validation, `npm run eval:claims -- --calibrate-only`. Review `results/claim-thresholds.json`: predeclared grid, dev-only IDs, manifest/checker provenance, threshold, false alarms and target-met flag. Commit before heldout. A ≤5% target on ten known-good dev documents requires zero flagged documents; publish target misses. Changes require a reviewed new edition.
+2. `npm run eval:claims` once creates protected `claims.json`; false alarms are per known-good document with any flag. Direct command refuses a second heldout evaluation. Then `npm run eval -- --mock` validates/reuses the complete claims edition. Standalone `npm run eval:checks` computes extractor/gold precision/recall (exact kind/span/raw), corruption recall/layer increments, mutation/no-op locations, whole-token exemption recall cost, named misses and known-good ≤10% proposed gate. Gate alone does not prove superiority.
+3. Inspect actual `e2e-mock.json`/`results.md` labels/denominators/provenance. B0/B1 computed/no call; mock scripts and unmeasured costs; failures counted. Missing/stale mocks throw `MockRecordingMissing` out of evaluation. Pair Wilson intervals are descriptive; inspect twenty source clusters beside forty heldout voice pairs. Scripts provide no live efficacy.
+4. Preserve freeze/claims and separate mock/live E2E editions. Existing mode editions refuse reruns; stale editions refuse reuse. Fixed paths do not implement general edition management: use reviewed archival/versioning, never delete evidence to bypass refusal. `checks.json`/`results.md` can be overwritten by aggregate runs: preserve earlier receipts first.
+5. After actual eval: `npx tsx scripts/spotcheck.ts --mock` or `--live`. Exclusive sheets require exactly20 actual heldout B4 rewrites; human fields begin null. Independent reviewer labels preservation/claims/style, records rubric/reviewer/IDs and examines misses. Bounded live subset can have fewer than20; refuse fabrication. Full live20 needs separately authorized sufficient scope/budget or reviewed scope change, never bypassing ceiling.
+
+The optional LLM comparative corpus calibration/ablation is **cut**. Code/overlap calibration and selected-attempt live server judge remain; neither supplies a calibrated LLM corpus false-alarm result. LLM comparison cells stay unmeasured even after live E2E. **Jev: not evaluated.**
+
+## Live evaluation owner workflow
+
+All steps are unexecuted and need later authorization. A plan/probe is not spend permission.
+
+1. Complete separately authorized backend setup/verification, including current copies/probe schema. Configure public `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`. Choose `EVAL_SESSION_FILE=.eval-auth/<owner-chosen-name>.json` inside gitignored `.eval-auth/`; protect with OS permissions (writer requests directory0700/file0600). Run `npm run eval:bootstrap-session` only when authorized. It exclusively saves one anonymous session/prints only user ID/path; no model call/grant. Never commit/print tokens.
+2. Set `EVAL_EXPECTED_USER_ID` to that exact ID. `npx tsx scripts/eval/plan-live.ts --allowance-micro-usd=<owner-declared-integer>` (positive, ≤5000000). Review exclusive `results/live-plan.json`: manifest hash, complete B2/B3/B4 pair groups and draft/self-check/revision/judge maxima. Default per-call/run money caps50000/150000 micro-USD; phase maxima can exceed run cap, leaving partial outcomes. Proposal creates no authorization/grant.
+3. Owner verifies deployed models/prices, chooses short future expiry and exact approval-reference, then inserts `eval_allowances(user_id,expires_at,max_calls,max_micro_usd,approved_by,note)` by privileged SQL. Exact bootstrapped user; plan's selected_max_calls; money ceiling≤allowance_micro_usd and≥selected_max_reserved_micro_usd; owner name and exact note. Evaluator cannot create/raise grants. Record approval without credentials.
+4. Retain session-file/expected-ID settings; set `EVAL_OWNER_APPROVAL_REFERENCE` to exact note. Under approval, `npm run eval -- --live` restores/refreshes and Auth-verifies saved user/persists rotation, validates plan/provenance and probes bounded requirements. Missing/changed identity refuses instead of creating another user. Probe checks only caller's newest active allowance, matching note/calls/money/ceiling; returns readiness only. SQL rechecks actual expiry/caps atomically per reservation. Expiry/concurrency can still stop work.
+5. Verify ledger IDs/models/reserved/actual cost through authenticated call_ledger SELECT. Live model rows without IDs refuse; unmeasured outcomes remain in conservative full-cohort denominator. Exercise initial budget refusal/partial cap exhaustion/provider failure/unknown/ledger-read failure. Do not extrapolate or supply provider/service keys to evaluator. Preserve identity/approval/readiness-time provenance and both mode editions.
+
+## Manual UI and provenance
+
+Reserve authorized host port before `npm run dev -- --host 127.0.0.1 --port <reserved-port> --strictPort`; no server/browser ran here.
+
+| Check | Future manual steps |
+|---|---|
+| Offline/live boundary | Open without public variables, then with both. Offline Demo network shows zero backend client/auth/probe before Check live setup. Explicit check creates session/probes without model calls; only successful probe and explicit Live selection send arbitrary text. Backend errors remain visible, no Demo fallback |
+| Scripted journeys | incident-note-03/terse engineer: ignore suggested Payments entity before freeze; inspect named first failures/verbatim repair/later must-may warning; acknowledge/approve/reload exact selected hash/version/ruling. Other attempts keep export locked. injected-ceo added claim/reject; allfail-replication/warm newsletter≤3 failures, Approve disabled, override≥10 trimmed characters |
+| Inputs/freeze | Empty/non-text/>30720-byte source,0/6 samples/>20480 sample bytes refuse;1–5 custom samples/built-ins work. Source/terms/aliases reset draft toggles. Frozen inputs/toggles read-only; server clock/hash/ledger replace preview including relative/year-less dates. New draft creates run |
+| Live resume | Interrupt after freeze/dispatch/complete attempt/final rewrite/partial judge; reload/explicit Resume reuses keys/selection. Last complete attempt can replay finish_attempts. Provider/budget/unknown/unavailable-judge flags visible; no fabricated output |
+| Export/races | Only selected complete review_ready evidence unlocks under valid ruling. Later reject revokes. Concurrent tab mutation/deletion/stale permission cannot unlock another hash/version. Click reloads/hashes exact stored content/asks gate. No trimming/newline; errors locked; existing copies cannot be revoked |
+| Text/evidence/style | HTML-looking strings render as React text; URLs not fetched. Inspect kept/missing/added colors/wording, IDs/raw/normalized/slice pointers, bidirectional evidence and judged N of M. Fact colors are display recomputation; stored flags/gate authoritative. Style features/reason/descriptive label have no invented metrics |
+| Persistence/erasure | Block/corrupt/fill browser storage: visible error, no fake history/unstated memory fallback. Reload actual history. Live deletion confirmation/cancel and SQL residue; clear Demo separately. Anonymous history-loss warning remains |
+| Accessibility/layout | Narrow/mobile/wide desktop; ledger scrolling/long hashes; empty/error/pending/read-only states; keyboard/focus, disabled actions, confirm/cancel, clipboard denial and exact .txt download. No rendered/accessibility claim exists |
+| Gutenberg slot | Under future authorized scope retrieve intended public-domain text; verify source/title/edition/license/jurisdiction/provenance, ≥600 words and no source-copy overlap. Current voice is authored PLACEHOLDER—not Gutenberg. Replacement changes corpus: preserve old edition and review new manifest/calibration/eval; never relabel placeholder as retrieved |
+
+Final documentation review compares README paths, handoff names, env consumers, RPC signatures/grants and actual artifacts/receipts with accepted source. Remove pending labels only for executed checks; retain unknown/mock/provenance/circularity caveats and LLM comparison cut. No release or publication acceptance follows from this checklist or syntax parsing.

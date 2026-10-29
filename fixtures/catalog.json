@@ -1,0 +1,388 @@
+{
+  "version": 1,
+  "freeze_date": "2026-10-24",
+  "reference_time": "2026-10-24T12:00:00.000Z",
+  "seeds": {
+    "split": 370037,
+    "pair": 370038,
+    "mutator": 370039
+  },
+  "sources": [
+    {
+      "id": "incident-note-01",
+      "genre": "incident-note",
+      "path": "fixtures/sources/heldout/incident-note-01.src.md",
+      "good_path": "fixtures/good/incident-note-01.md",
+      "traps": [
+        "quantity-unit",
+        "modal",
+        "quote"
+      ]
+    },
+    {
+      "id": "incident-note-02",
+      "genre": "incident-note",
+      "path": "fixtures/sources/heldout/incident-note-02.src.md",
+      "good_path": "fixtures/good/incident-note-02.md",
+      "traps": [
+        "date",
+        "unit",
+        "negation"
+      ]
+    },
+    {
+      "id": "incident-note-03",
+      "genre": "incident-note",
+      "path": "fixtures/sources/heldout/incident-note-03.src.md",
+      "good_path": "fixtures/good/incident-note-03.md",
+      "traps": [
+        "currency-million",
+        "range",
+        "identifier",
+        "version",
+        "curly-quote",
+        "relative-date"
+      ]
+    },
+    {
+      "id": "incident-note-04",
+      "genre": "incident-note",
+      "path": "fixtures/sources/heldout/incident-note-04.src.md",
+      "good_path": "fixtures/good/incident-note-04.md",
+      "traps": [
+        "time-zone",
+        "spelled-number",
+        "acronym"
+      ]
+    },
+    {
+      "id": "incident-note-05",
+      "genre": "incident-note",
+      "path": "fixtures/sources/heldout/incident-note-05.src.md",
+      "good_path": "fixtures/good/incident-note-05.md",
+      "traps": [
+        "percent",
+        "quantifier",
+        "negation"
+      ]
+    },
+    {
+      "id": "incident-note-06",
+      "genre": "incident-note",
+      "path": "fixtures/sources/heldout/incident-note-06.src.md",
+      "good_path": "fixtures/good/incident-note-06.md",
+      "traps": [
+        "currency",
+        "only-if",
+        "entity"
+      ]
+    },
+    {
+      "id": "incident-note-07",
+      "genre": "incident-note",
+      "path": "fixtures/sources/heldout/incident-note-07.src.md",
+      "good_path": "fixtures/good/incident-note-07.md",
+      "traps": [
+        "fraction-head",
+        "no-longer",
+        "identifier"
+      ]
+    },
+    {
+      "id": "incident-note-08",
+      "genre": "incident-note",
+      "path": "fixtures/sources/dev/incident-note-08.src.md",
+      "good_path": "fixtures/good/incident-note-08.md",
+      "traps": [
+        "range",
+        "fail-to",
+        "modal"
+      ]
+    },
+    {
+      "id": "incident-note-09",
+      "genre": "incident-note",
+      "path": "fixtures/sources/dev/incident-note-09.src.md",
+      "good_path": "fixtures/good/incident-note-09.md",
+      "traps": [
+        "multiplicity",
+        "negation",
+        "quote"
+      ]
+    },
+    {
+      "id": "incident-note-10",
+      "genre": "incident-note",
+      "path": "fixtures/sources/heldout/incident-note-10.src.md",
+      "good_path": "fixtures/good/incident-note-10.md",
+      "traps": [
+        "spelled-number",
+        "modal",
+        "identifier"
+      ]
+    },
+    {
+      "id": "press-release-01",
+      "genre": "press-release",
+      "path": "fixtures/sources/dev/press-release-01.src.md",
+      "good_path": "fixtures/good/press-release-01.md",
+      "traps": [
+        "million",
+        "currency",
+        "quantifier"
+      ]
+    },
+    {
+      "id": "press-release-02",
+      "genre": "press-release",
+      "path": "fixtures/sources/dev/press-release-02.src.md",
+      "good_path": "fixtures/good/press-release-02.md",
+      "traps": [
+        "percent",
+        "date",
+        "modal"
+      ]
+    },
+    {
+      "id": "press-release-03",
+      "genre": "press-release",
+      "path": "fixtures/sources/heldout/press-release-03.src.md",
+      "good_path": "fixtures/good/press-release-03.md",
+      "traps": [
+        "range",
+        "relative-date",
+        "quote"
+      ]
+    },
+    {
+      "id": "press-release-04",
+      "genre": "press-release",
+      "path": "fixtures/sources/heldout/press-release-04.src.md",
+      "good_path": "fixtures/good/press-release-04.md",
+      "traps": [
+        "title-name",
+        "entity",
+        "date"
+      ]
+    },
+    {
+      "id": "press-release-05",
+      "genre": "press-release",
+      "path": "fixtures/sources/heldout/press-release-05.src.md",
+      "good_path": "fixtures/good/press-release-05.md",
+      "traps": [
+        "acronym",
+        "version",
+        "number"
+      ]
+    },
+    {
+      "id": "press-release-06",
+      "genre": "press-release",
+      "path": "fixtures/sources/dev/press-release-06.src.md",
+      "good_path": "fixtures/good/press-release-06.md",
+      "traps": [
+        "half-million",
+        "currency",
+        "only-if"
+      ]
+    },
+    {
+      "id": "press-release-07",
+      "genre": "press-release",
+      "path": "fixtures/sources/heldout/press-release-07.src.md",
+      "good_path": "fixtures/good/press-release-07.md",
+      "traps": [
+        "spelled-number",
+        "modal",
+        "entity"
+      ]
+    },
+    {
+      "id": "press-release-08",
+      "genre": "press-release",
+      "path": "fixtures/sources/heldout/press-release-08.src.md",
+      "good_path": "fixtures/good/press-release-08.md",
+      "traps": [
+        "per-cent",
+        "no-longer",
+        "identifier"
+      ]
+    },
+    {
+      "id": "press-release-09",
+      "genre": "press-release",
+      "path": "fixtures/sources/dev/press-release-09.src.md",
+      "good_path": "fixtures/good/press-release-09.md",
+      "traps": [
+        "ambiguous-date",
+        "number",
+        "negation"
+      ]
+    },
+    {
+      "id": "press-release-10",
+      "genre": "press-release",
+      "path": "fixtures/sources/dev/press-release-10.src.md",
+      "good_path": "fixtures/good/press-release-10.md",
+      "traps": [
+        "currency",
+        "fail-to",
+        "modal"
+      ]
+    },
+    {
+      "id": "status-update-01",
+      "genre": "status-update",
+      "path": "fixtures/sources/heldout/status-update-01.src.md",
+      "good_path": "fixtures/good/status-update-01.md",
+      "traps": [
+        "currency-million",
+        "percent",
+        "modal",
+        "negation"
+      ]
+    },
+    {
+      "id": "status-update-02",
+      "genre": "status-update",
+      "path": "fixtures/sources/heldout/status-update-02.src.md",
+      "good_path": "fixtures/good/status-update-02.md",
+      "traps": [
+        "range",
+        "spelled-number",
+        "relative-date"
+      ]
+    },
+    {
+      "id": "status-update-03",
+      "genre": "status-update",
+      "path": "fixtures/sources/heldout/status-update-03.src.md",
+      "good_path": "fixtures/good/status-update-03.md",
+      "traps": [
+        "million",
+        "per-cent",
+        "fraction-head"
+      ]
+    },
+    {
+      "id": "status-update-04",
+      "genre": "status-update",
+      "path": "fixtures/sources/heldout/status-update-04.src.md",
+      "good_path": "fixtures/good/status-update-04.md",
+      "traps": [
+        "title-name",
+        "mixed-case-brand",
+        "timezone"
+      ]
+    },
+    {
+      "id": "status-update-05",
+      "genre": "status-update",
+      "path": "fixtures/sources/heldout/status-update-05.src.md",
+      "good_path": "fixtures/good/status-update-05.md",
+      "traps": [
+        "ambiguous-date",
+        "bare-half",
+        "pronoun-one",
+        "emoji"
+      ]
+    },
+    {
+      "id": "status-update-06",
+      "genre": "status-update",
+      "path": "fixtures/sources/dev/status-update-06.src.md",
+      "good_path": "fixtures/good/status-update-06.md",
+      "traps": [
+        "half-million",
+        "multiplicity",
+        "quantifier"
+      ]
+    },
+    {
+      "id": "status-update-07",
+      "genre": "status-update",
+      "path": "fixtures/sources/dev/status-update-07.src.md",
+      "good_path": "fixtures/good/status-update-07.md",
+      "traps": [
+        "acronym",
+        "identifier",
+        "fail-to"
+      ]
+    },
+    {
+      "id": "status-update-08",
+      "genre": "status-update",
+      "path": "fixtures/sources/heldout/status-update-08.src.md",
+      "good_path": "fixtures/good/status-update-08.md",
+      "traps": [
+        "only-if",
+        "negation",
+        "quantity-unit"
+      ]
+    },
+    {
+      "id": "status-update-09",
+      "genre": "status-update",
+      "path": "fixtures/sources/heldout/status-update-09.src.md",
+      "good_path": "fixtures/good/status-update-09.md",
+      "traps": [
+        "no-longer",
+        "percent",
+        "verbatim"
+      ]
+    },
+    {
+      "id": "status-update-10",
+      "genre": "status-update",
+      "path": "fixtures/sources/dev/status-update-10.src.md",
+      "good_path": "fixtures/good/status-update-10.md",
+      "traps": [
+        "currency",
+        "modal",
+        "entity"
+      ]
+    }
+  ],
+  "voices": [
+    {
+      "id": "terse-engineer",
+      "path": "fixtures/voices/terse-engineer.md",
+      "provenance": "agent-authored synthetic style sample",
+      "placeholder": false
+    },
+    {
+      "id": "warm-newsletter",
+      "path": "fixtures/voices/warm-newsletter.md",
+      "provenance": "agent-authored synthetic style sample",
+      "placeholder": false
+    },
+    {
+      "id": "gutenberg-placeholder",
+      "path": "fixtures/voices/gutenberg-placeholder.md",
+      "provenance": "PLACEHOLDER — not Gutenberg; agent-authored temporary prose, intended later source Pride and Prejudice ebook1342; retrieval and verification pending",
+      "placeholder": true
+    }
+  ],
+  "injected": [
+    {
+      "id": "injected-ceo",
+      "genre": "incident-note",
+      "path": "fixtures/injected/injected-ceo.src.md",
+      "good_path": "fixtures/good/injected-ceo.md",
+      "traps": [
+        "prompt-injection"
+      ]
+    }
+  ],
+  "authorship": {
+    "sources": "synthetic; agent-authored for this project; all names and organisations fictional",
+    "good": "agent-authored substantive paraphrases; annotation truth, not measured model outputs",
+    "voices": "agent-authored; third slot is PLACEHOLDER — not Gutenberg"
+  },
+  "validation": {
+    "status": "static construction checks only; no extractor or pipeline execution",
+    "word_count_method": "text/tokens.ts wordTokens Unicode letters/digits with internal apostrophes",
+    "recordings": "not generated; generator execution deferred"
+  }
+}
